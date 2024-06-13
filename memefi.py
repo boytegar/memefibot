@@ -9,8 +9,7 @@ import time
 from datetime import datetime
 from urllib.parse import unquote
 from utils.headers import headers_set
-from utils.queries import QUERY_BOOSTER, QUERY_BOT_CLAIM, QUERY_BOT_START, QUERY_NEXT_BOSS, QUERY_USER, QUERY_LOGIN, MUTATION_GAME_PROCESS_TAPS_BATCH
-from utils.queries import QUERY_TASK_VERIF, QUERY_TASK_COMPLETED, QUERY_GET_TASK, QUERY_TASK_ID, QUERY_GAME_CONFIG
+from utils.queries import QUERY_BOOSTER, QUERY_BOT_CLAIM, QUERY_BOT_START, QUERY_NEXT_BOSS, QUERY_USER, QUERY_LOGIN, MUTATION_GAME_PROCESS_TAPS_BATCH, QUERY_GAME_CONFIG
 
 url = "https://api-gw-tg.memefi.club/graphql"
 
@@ -26,7 +25,7 @@ def generate_random_nonce(length=52):
     return ''.join(random.choice(characters) for _ in range(length))
 
 
-# Mendapatkan akses token
+
 async def fetch(account_line):
     with open('query_id.txt', 'r') as file:
         lines = file.readlines()
@@ -41,7 +40,7 @@ async def fetch(account_line):
     user_data_dict = json.loads(unquote(user_data))
 
     url = 'https://api-gw-tg.memefi.club/graphql'
-    headers = headers_set.copy()  # Membuat salinan headers_set agar tidak mengubah variabel global
+    headers = headers_set.copy() 
     data = {
         "operationName": "MutationTelegramUserLogin",
         "variables": {
@@ -70,7 +69,6 @@ async def fetch(account_line):
             try:
                 json_response = await response.json()
                 if 'errors' in json_response:
-                    # print("Query ID Salah")
                     return None
                 else:
                     access_token = json_response['data']['telegramUserLogin']['access_token']
@@ -84,7 +82,7 @@ async def cek_user(index):
     access_token = await fetch(index + 1)
     url = "https://api-gw-tg.memefi.club/graphql"
 
-    headers = headers_set.copy()  # Membuat salinan headers_set agar tidak mengubah variabel global
+    headers = headers_set.copy()
     headers['Authorization'] = f'Bearer {access_token}'
     
     json_payload = {
@@ -140,12 +138,12 @@ async def submit_taps(index, total_tap):
             else:
                 print(f" Gagal Tap dengan status {response.status}, mencoba lagi...")
                 return None  # Mengembalikan respons error
-# cek stat
+
 async def cek_stat(index,headers):
     access_token = await fetch(index + 1)
     url = "https://api-gw-tg.memefi.club/graphql"
 
-    headers = headers_set.copy()  # Membuat salinan headers_set agar tidak mengubah variabel global
+    headers = headers_set.copy()  
     headers['Authorization'] = f'Bearer {access_token}'
     
     json_payload = {
@@ -170,109 +168,7 @@ async def cek_stat(index,headers):
             else:
                 print(response)
                 print(f" Gagal dengan status {response.status}, mencoba lagi...")
-                return None, None  # Mengembalikan None jika terjadi error
-
-async def check_and_complete_tasks(index, headers):
-    # if tasks_completed.get(account_number, False):
-    #     print(f"[ Akun {account_number + 1} ] Semua tugas telah selesai. Tidak perlu cek lagi. ✅")
-    #     return True
-    access_token = await fetch(index + 1)
-    headers = headers_set.copy()  # Membuat salinan headers_set agar tidak mengubah variabel global
-    headers['Authorization'] = f'Bearer {access_token}'
-    task_list_payload = {
-        "operationName": "GetTasksList",
-        "variables": {"campaignId": "50ef967e-dd9b-4bd8-9a19-5d79d7925454"},
-        "query": QUERY_GET_TASK
-    }
-
-    async with aiohttp.ClientSession() as session:
-        async with session.post(url, json=task_list_payload, headers=headers) as response:
-            if response.status != 200:
-                # Menampilkan status dan respons jika bukan 200 OK
-                print(f" Gagal dengan status {response.status}")
-                print(await response.text())  # Menampilkan respons teks untuk debugging
-                return False
-
-            try:
-                tasks = await response.json()
-            except aiohttp.ContentTypeError:
-                print("Gagal mengurai JSON, cek respons server.")
-                return False
-
-            # Lanjutkan dengan logika yang ada jika tidak ada error
-            all_completed = all(task['status'] == 'Completed' for task in tasks['data']['campaignTasks'])
-            if all_completed:
-                print(f"\r[ Akun {index + 1} ] Semua tugas telah selesai. ✅            ",flush=True)
-                return True
-
-
-            print(f"\n[ Akun {index + 1} ]\nList Task:\n")
-            for task in tasks['data']['campaignTasks']:
-                print(f"{task['name']} | {task['status']}")
-
-                if task['name'] == "Follow telegram channel" and task['status'] == "Pending":
-                    print(f"⏩ Skipping task: {task['name']}")
-                    continue  # Skip task jika nama task adalah "Follow telegram channel" dan statusnya "Pending"
-
-                if task['status'] == "Pending":
-                    print(f"\r🔍 Viewing task: {task['name']}", end="", flush=True)
-                    view_task_payload = {
-                        "operationName": "GetTaskById",
-                        "variables": {"taskId": task['id']},
-                        "query": QUERY_TASK_ID
-                    }
-                    async with session.post(url, json=view_task_payload, headers=headers) as view_response:
-                        view_result = await view_response.json()
-
-                        if 'errors' in view_result:
-                            print(f"\r❌ Gagal mendapatkan detail task: {task['name']}")
-                        else:
-                            task_details = view_result['data']['campaignTaskGetConfig']
-                            print(f"\r🔍 Detail Task: {task_details['name']}", end="", flush=True)
-
-                    await asyncio.sleep(2)  # Jeda 2 detik setelah melihat detail
-
-                    print(f"\r🔍 Verifikasi task: {task['name']}                                                                ", end="", flush=True)
-                    verify_task_payload = {
-                        "operationName": "CampaignTaskToVerification",
-                        "variables": {"userTaskId": task['userTaskId']},
-                        "query": QUERY_TASK_VERIF
-                    }
-                    async with session.post(url, json=verify_task_payload, headers=headers) as verify_response:
-                        verify_result = await verify_response.json()
-
-                        if 'errors' not in verify_result:
-                            print(f"\r✅ {task['name']} | Moved to Verification", flush=True)
-                        else:
-                            print(f"\r❌ {task['name']} | Failed to move to Verification", flush=True)
-
-                    await asyncio.sleep(2)  # Jeda 2 detik setelah verifikasi
-
-            # Cek ulang task setelah memindahkan ke verification
-            async with session.post(url, json=task_list_payload, headers=headers) as response:
-                updated_tasks = await response.json()
-
-                print("\nUpdated Task List After Verification:\n")
-                for task in updated_tasks['data']['campaignTasks']:
-                    print(f"{task['name']} | {task['status']}")
-                    if task['status'] == "Verification":
-                        print(f"\r🔥 Menyelesaikan task: {task['name']}", end="", flush=True)
-                        complete_task_payload = {
-                            "operationName": "CampaignTaskCompleted",
-                            "variables": {"userTaskId": task['userTaskId']},
-                            "query": QUERY_TASK_COMPLETED
-                        }
-                        async with session.post(url, json=complete_task_payload, headers=headers) as complete_response:
-                            complete_result = await complete_response.json()
-
-                            if 'errors' not in complete_result:
-                                print(f"\r✅ {task['name']} | Completed                         ", flush=True)
-                            else:
-                                print(f"\r❌ {task['name']} | Failed to complete            ", flush=True)
-                    
-                    await asyncio.sleep(3)  # Jeda 3 detik setelah menyelesaikan tugas
-
-    return False
+                return None, None  
 
 async def change_boss(index):
     global token_fresh
@@ -282,7 +178,7 @@ async def change_boss(index):
     
     access_token = token_fresh
     url = "https://api-gw-tg.memefi.club/graphql"
-    headers = headers_set.copy()  # Membuat salinan headers_set agar tidak mengubah variabel global
+    headers = headers_set.copy()
     headers['Authorization'] = f'Bearer {access_token}'
     json_payload = {
         "operationName": "telegramGameSetNextBoss",
@@ -329,7 +225,7 @@ async def claim_bot(index):
     
     access_token = token_fresh
     url = "https://api-gw-tg.memefi.club/graphql"
-    headers = headers_set.copy()  # Membuat salinan headers_set agar tidak mengubah variabel global
+    headers = headers_set.copy() 
     headers['Authorization'] = f'Bearer {access_token}'
     json_payload = {
         "operationName": "TapbotClaim",
@@ -366,7 +262,7 @@ async def apply_boost(index, boost_type):
     access_token = token_fresh
     url = "https://api-gw-tg.memefi.club/graphql"
 
-    headers = headers_set.copy()  # Membuat salinan headers_set agar tidak mengubah variabel global
+    headers = headers_set.copy() 
     headers['Authorization'] = f'Bearer {access_token}'
     json_payload = {
         "operationName": "telegramGameActivateBooster",
@@ -408,12 +304,11 @@ async def main():
             if result is not None:
                 first_name = result.get('firstName', 'Unknown')
                 last_name = result.get('lastName', 'Unknown')
-                league = result.get('league', 'Unknown')
-                # accounts.append((token_index, result, first_name, last_name, league))
+                
             else:
                 print(f"Akun {token_index + 1}: Token tidak valid atau terjadi kesalahan")
             headers = {'Authorization': f'Bearer {result}'}
-            # await check_and_complete_tasks(index, headers)
+
             stat_result = await cek_stat(token_index, headers)
 
             if stat_result is not None:
@@ -551,17 +446,5 @@ async def main():
         now = datetime.now().isoformat(" ").split(".")[0]
         print(f"{now} | waiting 60 min")
         time.sleep(3600)
-        # animate_energy_recharge(5)   
-        
-def animate_energy_recharge(duration):
-    frames = ["|", "/", "-", "\\"]
-    end_time = time.time() + duration
-    while time.time() < end_time:
-        remaining_time = int(end_time - time.time())
-        for frame in frames:
-            print(f"\r🪫 Mengisi ulang energi {frame} - Tersisa {remaining_time} detik         ", end="", flush=True)
-            time.sleep(0.25)
-    print("\r🔋 Pengisian energi selesai.                            ", flush=True)     
 
-# Jalankan fungsi main() dan simpan hasilnya
 asyncio.run(main())
