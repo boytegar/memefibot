@@ -340,19 +340,19 @@ async def main():
                                 continue
                             time.sleep(5)
 
-                    # if current_level_boss == 11:
-                    #     print("Boss max level", flush=True)
-                    #     token_fresh = ""
-                    #     token_index = (token_index + 1) % len(lines)
-                    #     print()
-                    #     time.sleep(5)
-                    #     continue
+                    if current_level_boss == 11:
+                        print("Boss max level", flush=True)
+                        token_fresh = ""
+                        token_index = (token_index + 1) % len(lines)
+                        print()
+                        time.sleep(5)
+                        continue
                     print(f"Free Turbo : {user_data['freeBoosts']['currentTurboAmount']} Free Energy : {user_data['freeBoosts']['currentRefillEnergyAmount']}")
                     print(f"Boss level : {user_data['currentBoss']['level']} | Boss health : {user_data['currentBoss']['currentHealth']} - {user_data['currentBoss']['maxHealth']}")
                     print()
 
-                    # if boss_health <= 0:
-                    #     await change_boss(token_index)
+                    if boss_health <= 0:
+                        await change_boss(token_index)
 
                     if auto_use_booster == 'y':  
                         if energy_sekarang < 300:
