@@ -302,58 +302,58 @@ async def main():
       
         for index, line in enumerate(lines):
             print("=== [ START PROCESSING ] ===")
-            result = await cek_user(token_index)
-            if result is not None:
-                first_name = result.get('firstName', 'Unknown')
-                last_name = result.get('lastName', 'Unknown')
-                
-            else:
-                print(f"Akun {token_index + 1}: Token tidak valid atau terjadi kesalahan")
-            headers = {'Authorization': f'Bearer {result}'}
+            while True:
+                result = await cek_user(token_index)
+                if result is not None:
+                    first_name = result.get('firstName', 'Unknown')
+                    last_name = result.get('lastName', 'Unknown')
+                    
+                else:
+                    print(f"Akun {token_index + 1}: Token tidak valid atau terjadi kesalahan")
+                headers = {'Authorization': f'Bearer {result}'}
 
-            stat_result = await cek_stat(token_index, headers)
+                stat_result = await cek_stat(token_index, headers)
 
-            if stat_result is not None:
-                user_data = stat_result                
-                energy_sekarang = user_data['currentEnergy']
-                boost_energy_amount = user_data['freeBoosts']['currentRefillEnergyAmount']
-                boost_turbo_amount = user_data['freeBoosts']['currentTurboAmount']
-                boss_health = user_data['currentBoss']['currentHealth']
-                current_level_boss = user_data['currentBoss']['level']
-                
-                print(f"[ +++++ Akun {token_index + 1} - {first_name} {last_name} +++++]")
-                print()
-                print(f"Balance : {user_data['coinsAmount']} | Energy : {user_data['currentEnergy']} - {user_data['maxEnergy']}")
-                print()
-                if auto_claim_bot == 'y':
-                    claim_bot_data = await claim_bot(token_index)
-                    if claim_bot_data is None:
-                        time.sleep(5)
-                        continue
-                    time.sleep(5)
-
-                    start_bot_data = await start_bot(token_index)
-                    if start_bot_data is None:
-                        time.sleep(5)
-                        continue
-                    time.sleep(5)
-
-                if current_level_boss == 11:
-                    print("Boss max level", flush=True)
-                    token_fresh = ""
-                    token_index = (token_index + 1) % len(lines)
+                if stat_result is not None:
+                    user_data = stat_result                
+                    energy_sekarang = user_data['currentEnergy']
+                    boost_energy_amount = user_data['freeBoosts']['currentRefillEnergyAmount']
+                    boost_turbo_amount = user_data['freeBoosts']['currentTurboAmount']
+                    boss_health = user_data['currentBoss']['currentHealth']
+                    current_level_boss = user_data['currentBoss']['level']
+                    
+                    print(f"[ +++++ Akun {token_index + 1} - {first_name} {last_name} +++++]")
                     print()
-                    time.sleep(5)
-                    continue
-                print(f"Free Turbo : {user_data['freeBoosts']['currentTurboAmount']} Free Energy : {user_data['freeBoosts']['currentRefillEnergyAmount']}")
-                print(f"Boss level : {user_data['currentBoss']['level']} | Boss health : {user_data['currentBoss']['currentHealth']} - {user_data['currentBoss']['maxHealth']}")
-                print()
+                    print(f"Balance : {user_data['coinsAmount']} | Energy : {user_data['currentEnergy']} - {user_data['maxEnergy']}")
+                    print()
+                    if auto_claim_bot == 'y':
+                        claim_bot_data = await claim_bot(token_index)
+                        if claim_bot_data is None:
+                            time.sleep(5)
+                            continue
+                        time.sleep(5)
 
-                if boss_health <= 0:
-                    await change_boss(token_index)
+                        start_bot_data = await start_bot(token_index)
+                        if start_bot_data is None:
+                            time.sleep(5)
+                            continue
+                        time.sleep(5)
 
-                if auto_use_booster == 'y':  
-                    while True:
+                    if current_level_boss == 11:
+                        print("Boss max level", flush=True)
+                        token_fresh = ""
+                        token_index = (token_index + 1) % len(lines)
+                        print()
+                        time.sleep(5)
+                        continue
+                    print(f"Free Turbo : {user_data['freeBoosts']['currentTurboAmount']} Free Energy : {user_data['freeBoosts']['currentRefillEnergyAmount']}")
+                    print(f"Boss level : {user_data['currentBoss']['level']} | Boss health : {user_data['currentBoss']['currentHealth']} - {user_data['currentBoss']['maxHealth']}")
+                    print()
+
+                    if boss_health <= 0:
+                        await change_boss(token_index)
+
+                    if auto_use_booster == 'y':  
                         if energy_sekarang < 300:
                             if boost_energy_amount > 0:
                                 boost_type = "Recharge"
@@ -393,6 +393,7 @@ async def main():
                                         break
 
                                     time.sleep(2)
+                                break
                             else:
                                 while True:
                                     total_tap = random.randint(20, 100)
@@ -416,34 +417,36 @@ async def main():
                                         turbo_time = 0
                                         break
 
-                                time.sleep(2)
-                else:
-                    while True:
-                        total_tap = random.randint(10, 50)
-                        respon = await submit_taps(token_index, total_tap)
+                                    time.sleep(2)
+                                    
+                    else:
+                        while True:
+                            total_tap = random.randint(10, 50)
+                            respon = await submit_taps(token_index, total_tap)
 
-                        if respon is not None:
-                            print(f"\rTapped ")
-                            energy = respon['telegramGameProcessTapsBatch']['currentEnergy']
-                            current_boss = respon['telegramGameProcessTapsBatch']['currentBoss']['currentHealth']
-                            print(f"current energy : {energy} - current health boss : {current_boss}")
-                        else:
-                            print(f"failed status {respon}, mencoba lagi...")
-                            break
-                    
-                        if current_boss <= 0:
-                            break
+                            if respon is not None:
+                                print(f"\rTapped ")
+                                energy = respon['telegramGameProcessTapsBatch']['currentEnergy']
+                                current_boss = respon['telegramGameProcessTapsBatch']['currentBoss']['currentHealth']
+                                print(f"current energy : {energy} - current health boss : {current_boss}")
+                            else:
+                                print(f"failed status {respon}, mencoba lagi...")
+                                break
+                        
+                            if current_boss <= 0:
+                                break
 
-                        time.sleep(2)
-                        if energy < 300:
-                            print("\r🪫 Energy Habis, tidak ada booster tersedia. Beralih ke akun berikutnya.\n", flush=True)
-                            token_fresh = ""
-                            token_index = (token_index + 1) % len(lines)
                             time.sleep(2)
-                            break
-                            
+                            if energy < 300:
+                                print("\r🪫 Energy Habis, tidak ada booster tersedia. Beralih ke akun berikutnya.\n", flush=True)
+                                token_fresh = ""
+                                token_index = (token_index + 1) % len(lines)
+                                time.sleep(2)
+                                break
+                        break
+                                
 
-            time.sleep(10)
+                time.sleep(10)
         print("ALL ID DONE")
         print()
         now = datetime.now().isoformat(" ").split(".")[0]
