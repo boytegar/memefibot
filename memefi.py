@@ -303,7 +303,7 @@ async def main():
         for index, line in enumerate(lines):
             print("=== [ START PROCESSING ] ===")
             while True:
-                result = await cek_user(token_index)
+                result = await cek_user(index)
                 if result is not None:
                     first_name = result.get('firstName', 'Unknown')
                     last_name = result.get('lastName', 'Unknown')
@@ -312,7 +312,7 @@ async def main():
                     print(f"Akun {token_index + 1}: Token tidak valid atau terjadi kesalahan")
                 headers = {'Authorization': f'Bearer {result}'}
 
-                stat_result = await cek_stat(token_index, headers)
+                stat_result = await cek_stat(index, headers)
 
                 if stat_result is not None:
                     user_data = stat_result                
@@ -322,51 +322,54 @@ async def main():
                     boss_health = user_data['currentBoss']['currentHealth']
                     current_level_boss = user_data['currentBoss']['level']
                     
-                    print(f"[ +++++ Akun {token_index + 1} - {first_name} {last_name} +++++]")
+                    print(f"[ +++++ Akun {index + 1} - {first_name} {last_name} +++++]")
                     print()
                     print(f"Balance : {user_data['coinsAmount']} | Energy : {user_data['currentEnergy']} - {user_data['maxEnergy']}")
                     print()
                     if auto_claim_bot == 'y':
-                        claim_bot_data = await claim_bot(token_index)
-                        if claim_bot_data is None:
+                        if turbo_status == False:
+                            claim_bot_data = await claim_bot(index)
+                            if claim_bot_data is None:
+                                time.sleep(5)
+                                continue
                             time.sleep(5)
-                            continue
-                        time.sleep(5)
 
-                        start_bot_data = await start_bot(token_index)
-                        if start_bot_data is None:
+                            start_bot_data = await start_bot(index)
+                            if start_bot_data is None:
+                                time.sleep(5)
+                                continue
                             time.sleep(5)
-                            continue
-                        time.sleep(5)
 
-                    if current_level_boss == 11:
-                        print("Boss max level", flush=True)
-                        token_fresh = ""
-                        token_index = (token_index + 1) % len(lines)
-                        print()
-                        time.sleep(5)
-                        continue
+                    # if current_level_boss == 11:
+                    #     print("Boss max level", flush=True)
+                    #     token_fresh = ""
+                    #     token_index = (token_index + 1) % len(lines)
+                    #     print()
+                    #     time.sleep(5)
+                    #     continue
                     print(f"Free Turbo : {user_data['freeBoosts']['currentTurboAmount']} Free Energy : {user_data['freeBoosts']['currentRefillEnergyAmount']}")
                     print(f"Boss level : {user_data['currentBoss']['level']} | Boss health : {user_data['currentBoss']['currentHealth']} - {user_data['currentBoss']['maxHealth']}")
                     print()
 
-                    if boss_health <= 0:
-                        await change_boss(token_index)
+                    # if boss_health <= 0:
+                    #     await change_boss(token_index)
 
                     if auto_use_booster == 'y':  
                         if energy_sekarang < 300:
                             if boost_energy_amount > 0:
                                 boost_type = "Recharge"
-                                await apply_boost(token_index, boost_type)
+                                await apply_boost(index, boost_type)
                             else:
                                 print("\r🪫 Energy Habis, tidak ada booster tersedia. Beralih ke akun berikutnya.\n", flush=True)
                                 token_fresh = ""
-                                token_index = (token_index + 1) % len(lines)
+                                # token_index = (token_index + 1) % len(lines)
+                                break
                         else:
+                            
                             if(turbo_status == False):
                                 while True:
                                     total_tap = random.randint(10, 50)
-                                    respon = await submit_taps(token_index, total_tap)
+                                    respon = await submit_taps(index, total_tap)
 
                                     if respon is not None:
                                         print(f"\rTapped ")
@@ -381,7 +384,9 @@ async def main():
                                         break
 
                                     if energy < 300:
-                                        print("Energy is less than 300. Stopping the loop.")
+                                        print("\rEnergy Habis, tidak ada booster tersedia. Beralih ke akun berikutnya.\n", flush=True)
+                                        token_fresh = ""
+                                        # token_index = (token_index + 1) % len(lines)
                                         break
 
                                     if(boost_turbo_amount > 0):
@@ -391,17 +396,19 @@ async def main():
                                         turbo_status = True
                                         turbo_time = time.time()
                                         break
-
                                     time.sleep(2)
-                                break
+
+                                if energy < 300:
+                                    token_fresh = ""
+                                    # token_index = (token_index + 1) % len(lines)
+                                    break
                             else:
                                 while True:
-                                    total_tap = random.randint(20, 100)
-                                    respon = await submit_taps(token_index, total_tap)
+                                    total_tap = random.randint(50, 200)
+                                    respon = await submit_taps(index, total_tap)
                                     
                                     if respon is not None:
-                                        print(f"Tapped")
-                                        # print(respon)
+                                        print(f"Tapped Turbo")
                                         energy = respon['telegramGameProcessTapsBatch']['currentEnergy']
                                         current_boss = respon['telegramGameProcessTapsBatch']['currentBoss']['currentHealth']
                                         print(f"current energy : {energy} - current health boss : {current_boss}")
@@ -410,19 +417,17 @@ async def main():
                                         break
                                     
                                     if current_boss <= 0:
-                                        await change_boss(token_index)
+                                        await change_boss(index)
                                         
                                     if ((time.time() - turbo_time) > 10):
                                         turbo_status = False
                                         turbo_time = 0
                                         break
-
-                                    time.sleep(2)
-                                    
+                                    time.sleep(1)
                     else:
                         while True:
                             total_tap = random.randint(10, 50)
-                            respon = await submit_taps(token_index, total_tap)
+                            respon = await submit_taps(index, total_tap)
 
                             if respon is not None:
                                 print(f"\rTapped ")
@@ -438,15 +443,15 @@ async def main():
 
                             time.sleep(2)
                             if energy < 300:
-                                print("\r🪫 Energy Habis, tidak ada booster tersedia. Beralih ke akun berikutnya.\n", flush=True)
+                                print("\rEnergy Habis, tidak ada booster tersedia. Beralih ke akun berikutnya.\n", flush=True)
                                 token_fresh = ""
-                                token_index = (token_index + 1) % len(lines)
+                                # token_index = (token_index + 1) % len(lines)
                                 time.sleep(2)
                                 break
                         break
                                 
 
-                time.sleep(10)
+                time.sleep(2)
         print("ALL ID DONE")
         print()
         now = datetime.now().isoformat(" ").split(".")[0]
