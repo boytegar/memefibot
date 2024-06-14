@@ -344,7 +344,6 @@ async def main():
                     time.sleep(5)
                     continue
                 print(f"Free Turbo : {user_data['freeBoosts']['currentTurboAmount']} Free Energy : {user_data['freeBoosts']['currentRefillEnergyAmount']}")
-                print()
                 print(f"Boss level : {user_data['currentBoss']['level']} | Boss health : {user_data['currentBoss']['currentHealth']} - {user_data['currentBoss']['maxHealth']}")
                 print()
 
@@ -416,7 +415,8 @@ async def main():
 
                                 time.sleep(2)
                 else:
-                    if energy_sekarang < 300:
+                    
+                    while True:
                         total_tap = random.randint(10, 50)
                         respon = await submit_taps(token_index, total_tap)
 
@@ -428,16 +428,16 @@ async def main():
                         else:
                             print(f"failed status {respon}, mencoba lagi...")
                             break
-                
+                    
                         if current_boss <= 0:
                             break
 
                         time.sleep(2)
-                    else:
-                        print("\r🪫 Energy Habis, tidak ada booster tersedia. Beralih ke akun berikutnya.\n", flush=True)
-                        token_fresh = ""
-                        token_index = (token_index + 1) % len(lines)
-                        time.sleep(2)
+                        if energy < 300:
+                            print("\r🪫 Energy Habis, tidak ada booster tersedia. Beralih ke akun berikutnya.\n", flush=True)
+                            token_fresh = ""
+                            token_index = (token_index + 1) % len(lines)
+                            time.sleep(2)
 
             print("=== [ MOVE PROCESSING ] ===")
             time.sleep(10)
