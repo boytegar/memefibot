@@ -346,7 +346,7 @@ async def main():
                         token_index = (token_index + 1) % len(lines)
                         print()
                         time.sleep(5)
-                        continue
+                        break
                     print(f"Free Turbo : {user_data['freeBoosts']['currentTurboAmount']} Free Energy : {user_data['freeBoosts']['currentRefillEnergyAmount']}")
                     print(f"Boss level : {user_data['currentBoss']['level']} | Boss health : {user_data['currentBoss']['currentHealth']} - {user_data['currentBoss']['maxHealth']}")
                     print()
