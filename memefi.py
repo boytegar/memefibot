@@ -353,67 +353,68 @@ async def main():
                     await change_boss(token_index)
 
                 if auto_use_booster == 'y':  
-                    if energy_sekarang < 300:
-                        if boost_energy_amount > 0:
-                            boost_type = "Recharge"
-                            await apply_boost(token_index, boost_type)
+                    while True:
+                        if energy_sekarang < 300:
+                            if boost_energy_amount > 0:
+                                boost_type = "Recharge"
+                                await apply_boost(token_index, boost_type)
+                            else:
+                                print("\r🪫 Energy Habis, tidak ada booster tersedia. Beralih ke akun berikutnya.\n", flush=True)
+                                token_fresh = ""
+                                token_index = (token_index + 1) % len(lines)
                         else:
-                            print("\r🪫 Energy Habis, tidak ada booster tersedia. Beralih ke akun berikutnya.\n", flush=True)
-                            token_fresh = ""
-                            token_index = (token_index + 1) % len(lines)
-                    else:
-                        if(turbo_status == False):
-                            while True:
-                                total_tap = random.randint(10, 50)
-                                respon = await submit_taps(token_index, total_tap)
+                            if(turbo_status == False):
+                                while True:
+                                    total_tap = random.randint(10, 50)
+                                    respon = await submit_taps(token_index, total_tap)
 
-                                if respon is not None:
-                                    print(f"\rTapped ")
-                                    energy = respon['telegramGameProcessTapsBatch']['currentEnergy']
-                                    current_boss = respon['telegramGameProcessTapsBatch']['currentBoss']['currentHealth']
-                                    print(f"current energy : {energy} - current health boss : {current_boss}")
-                                else:
-                                    print(f"failed status {respon}, mencoba lagi...")
-                                    break
-                
-                                if current_boss <= 0:
-                                    break
+                                    if respon is not None:
+                                        print(f"\rTapped ")
+                                        energy = respon['telegramGameProcessTapsBatch']['currentEnergy']
+                                        current_boss = respon['telegramGameProcessTapsBatch']['currentBoss']['currentHealth']
+                                        print(f"current energy : {energy} - current health boss : {current_boss}")
+                                    else:
+                                        print(f"failed status {respon}, mencoba lagi...")
+                                        break
+                    
+                                    if current_boss <= 0:
+                                        break
 
-                                if energy < 300:
-                                    print("Energy is less than 300. Stopping the loop.")
-                                    break
+                                    if energy < 300:
+                                        print("Energy is less than 300. Stopping the loop.")
+                                        break
 
-                                if(boost_turbo_amount > 0):
-                                    print("masuk turbo")
-                                    boost_type = "Turbo"
-                                    await apply_boost(token_index, boost_type)
-                                    turbo_status = True
-                                    turbo_time = time.time()
-                                    break
+                                    if(boost_turbo_amount > 0):
+                                        print("masuk turbo")
+                                        boost_type = "Turbo"
+                                        await apply_boost(token_index, boost_type)
+                                        turbo_status = True
+                                        turbo_time = time.time()
+                                        break
 
-                                time.sleep(2)
-                        else:
-                            while True:
-                                total_tap = random.randint(20, 100)
-                                respon = await submit_taps(token_index, total_tap)
-                                
-                                if respon is not None:
-                                    print(f"Tapped")
-                                    # print(respon)
-                                    energy = respon['telegramGameProcessTapsBatch']['currentEnergy']
-                                    current_boss = respon['telegramGameProcessTapsBatch']['currentBoss']['currentHealth']
-                                    print(f"current energy : {energy} - current health boss : {current_boss}")
-                                else:
-                                    print(f" Gagal dengan status {respon}, mencoba lagi...")
-                                    break
-                                
-                                if current_boss <= 0:
-                                    await change_boss(token_index)
+                                    time.sleep(2)
+                            else:
+                                while True:
+                                    total_tap = random.randint(20, 100)
+                                    respon = await submit_taps(token_index, total_tap)
                                     
-                                if ((time.time() - turbo_time) > 10):
-                                    turbo_status = False
-                                    turbo_time = 0
-                                    break
+                                    if respon is not None:
+                                        print(f"Tapped")
+                                        # print(respon)
+                                        energy = respon['telegramGameProcessTapsBatch']['currentEnergy']
+                                        current_boss = respon['telegramGameProcessTapsBatch']['currentBoss']['currentHealth']
+                                        print(f"current energy : {energy} - current health boss : {current_boss}")
+                                    else:
+                                        print(f" Gagal dengan status {respon}, mencoba lagi...")
+                                        break
+                                    
+                                    if current_boss <= 0:
+                                        await change_boss(token_index)
+                                        
+                                    if ((time.time() - turbo_time) > 10):
+                                        turbo_status = False
+                                        turbo_time = 0
+                                        break
 
                                 time.sleep(2)
                 else:
