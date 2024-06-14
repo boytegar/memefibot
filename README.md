@@ -14,7 +14,7 @@ Install with python
 
 1. Download Python > install
 2. run in cmd pip install -r requirements.txt
-3. create file query.txt
+3. create file query_id.txt
 4. Open Bot Memefi di PC (Telegram Desktop) > settings > advanced > experimntal > enable webview inspecting
     Ctrl + Shift + i to open inspect webview
 5. Open Application > Session Storage > copy all tgWebAppData ex: query=xxxxx
