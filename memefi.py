@@ -253,6 +253,7 @@ def print_welcome_message(serial=None):
     if serial is not None:
         print(f"Copy, tag bot @SnailHelperBot and paste this key in discussion group t.me/sanscryptox")
         print(f"Your key : {serial}")
+
 async def apply_boost(index, boost_type):
     global token_fresh
     if token_fresh == "":
@@ -300,6 +301,7 @@ async def main():
     while True:
       
         for index, line in enumerate(lines):
+            print("=== [ START PROCESSING ] ===")
             result = await cek_user(token_index)
             if result is not None:
                 first_name = result.get('firstName', 'Unknown')
@@ -415,7 +417,6 @@ async def main():
 
                                 time.sleep(2)
                 else:
-                    
                     while True:
                         total_tap = random.randint(10, 50)
                         respon = await submit_taps(token_index, total_tap)
@@ -438,8 +439,9 @@ async def main():
                             token_fresh = ""
                             token_index = (token_index + 1) % len(lines)
                             time.sleep(2)
+                            break
+                            
 
-            print("=== [ MOVE PROCESSING ] ===")
             time.sleep(10)
         print("ALL ID DONE")
         print()
