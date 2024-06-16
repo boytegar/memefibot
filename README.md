@@ -5,7 +5,7 @@ support my github channel
 
 Register Here : [MEMEFI Bot](https://t.me/memefi_coin_bot?start=r_e8e1c3ae19)
 
-Join to My Telegram Group : [S4NSGroup](https://t.me/sanscryptox)
+Join to My Telegram Group : [S4NSGroup](https://t.me/sansxgroup)
 
 
 ## Tutorial
