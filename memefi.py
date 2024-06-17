@@ -9,7 +9,7 @@ import time
 from datetime import datetime
 from urllib.parse import unquote
 from utils.headers import headers_set
-from utils.queries import QUERY_BOOSTER, QUERY_BOT_CLAIM, QUERY_BOT_START, QUERY_NEXT_BOSS, QUERY_USER, QUERY_LOGIN, MUTATION_GAME_PROCESS_TAPS_BATCH, QUERY_GAME_CONFIG
+from utils.queries import QUERY_BOOSTER, QUERY_BOT_CLAIM, QUERY_BOT_START, QUERY_CLAIM_COMBO, QUERY_NEXT_BOSS, QUERY_USER, QUERY_LOGIN, MUTATION_GAME_PROCESS_TAPS_BATCH, QUERY_GAME_CONFIG
 
 url = "https://api-gw-tg.memefi.club/graphql"
 
@@ -277,6 +277,32 @@ async def apply_boost(index, boost_type):
             else:
                 print("boost error")
 
+async def claim_combo(index, nonce, number_combo, list_number_combo):
+    global token_fresh
+    if token_fresh == "":
+        token_fresh = await fetch(index + 1)
+        print("set token fresh")
+    
+    access_token = token_fresh
+    url = "https://api-gw-tg.memefi.club/graphql"
+    headers = headers_set.copy() 
+    headers['Authorization'] = f'Bearer {access_token}'
+    json_payload = {
+        "operationName": "MutationGameProcessTapsBatch",
+        "variables": {"payload":{"nonce":nonce,"tapsCount":number_combo,"vector":list_number_combo}},
+        "query": QUERY_CLAIM_COMBO
+    }
+    async with aiohttp.ClientSession() as session:
+        async with session.post(url, json=json_payload, headers=headers) as response:
+            jsons = await response.json()
+            if response.status == 200:
+                print("claim combo done")
+                return response
+            else:
+                print("claim combo failed")
+                return None
+
+
 async def main():
 
     print_welcome_message()
@@ -295,6 +321,28 @@ async def main():
             break
         else:
             print("Masukkan 'y' atau 'n'.")
+    
+    while True:
+        auto_claim_combo = input("Auto Claim Combo ? (default n) (y/n): ").strip().lower()
+        if auto_claim_combo in ['y', 'n', '']:
+            auto_claim_combo = auto_claim_combo or 'n'
+            break
+        else:
+            print("Masukkan 'y' atau 'n'.")
+    if auto_claim_combo == 'y':
+        while True:
+            number_combo = int(input("Number Claim Combo ? (default 0) : ").strip().lower())
+            if number_combo >= 0:
+                number_combo = number_combo or 1
+                break
+            else:
+                print("Masukkan nomor combo.")
+
+        while True:
+            list_number_combo = input("list Number Claim Combo ? (default 1,2,3,4) : ").strip().lower()
+            list_number_combo = list_number_combo or "1,2,3,4"
+            break
+
 
     print("Starting Memefi bot...")
     global token_index, turbo_status, turbo_time, token_fresh
@@ -321,7 +369,7 @@ async def main():
                     boost_turbo_amount = user_data['freeBoosts']['currentTurboAmount']
                     boss_health = user_data['currentBoss']['currentHealth']
                     current_level_boss = user_data['currentBoss']['level']
-                    
+                    nonce = user_data['nonce']
                     print(f"[ +++++ Akun {index + 1} - {first_name} {last_name} +++++]")
                     print()
                     print(f"Balance : {user_data['coinsAmount']} | Energy : {user_data['currentEnergy']} - {user_data['maxEnergy']}")
@@ -339,6 +387,10 @@ async def main():
                                 time.sleep(5)
                                 continue
                             time.sleep(5)
+                    
+                    if auto_claim_combo == 'y':
+                        claim_combo_data = await claim_combo(index, nonce, number_combo, list_number_combo)
+                        time.sleep(5)
 
                     if current_level_boss == 11:
                         print("Boss max level", flush=True)

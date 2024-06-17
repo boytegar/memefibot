@@ -28,4 +28,5 @@ Install with python
 - Auto Booster
 - Auto Claim Bot
 - Auto Change Boss
+- Input Claim Combo
 - Multi Account

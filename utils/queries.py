@@ -386,3 +386,49 @@ mutation TapbotStart {
     __typename
   }
 }"""
+
+
+QUERY_CLAIM_COMBO ="""mutation MutationGameProcessTapsBatch($payload: TelegramGameTapsBatchInput!) {
+  telegramGameProcessTapsBatch(payload: $payload) {
+    ...FragmentBossFightConfig
+    __typename
+  }
+}
+
+fragment FragmentBossFightConfig on TelegramGameConfigOutput {
+  _id
+  coinsAmount
+  currentEnergy
+  maxEnergy
+  weaponLevel
+  zonesCount
+  tapsReward
+  energyLimitLevel
+  energyRechargeLevel
+  tapBotLevel
+  currentBoss {
+    _id
+    level
+    currentHealth
+    maxHealth
+    __typename
+  }
+  freeBoosts {
+    _id
+    currentTurboAmount
+    maxTurboAmount
+    turboLastActivatedAt
+    turboAmountLastRechargeDate
+    currentRefillEnergyAmount
+    maxRefillEnergyAmount
+    refillEnergyLastActivatedAt
+    refillEnergyAmountLastRechargeDate
+    __typename
+  }
+  bonusLeaderDamageEndAt
+  bonusLeaderDamageStartAt
+  bonusLeaderDamageMultiplier
+  nonce
+  __typename
+}
+"""
