@@ -209,7 +209,6 @@ async def start_bot(index):
     }
     async with aiohttp.ClientSession() as session:
         async with session.post(url, json=json_payload, headers=headers) as response:
-            jsons = await response.json()
             if response.status == 200:
                 print("start bot done")
                 return response
@@ -436,8 +435,8 @@ async def main():
                                         break
 
                                     if energy < 300:
-                                        print("\rEnergy Habis, tidak ada booster tersedia. Beralih ke akun berikutnya.\n", flush=True)
-                                        token_fresh = ""
+                                        print("\rEnergy Habis\n", flush=True)
+                                        # token_fresh = ""
                                         # token_index = (token_index + 1) % len(lines)
                                         break
 
@@ -453,7 +452,7 @@ async def main():
                                 if energy < 300:
                                     token_fresh = ""
                                     # token_index = (token_index + 1) % len(lines)
-                                    break
+                                    # break
                             else:
                                 while True:
                                     total_tap = random.randint(50, 200)
@@ -500,7 +499,7 @@ async def main():
                                 # token_index = (token_index + 1) % len(lines)
                                 time.sleep(2)
                                 break
-                        break
+                        
                                 
 
                 time.sleep(2)
