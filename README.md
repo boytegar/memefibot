@@ -18,7 +18,7 @@ Install with python
 4. Open Bot Memefi di PC (Telegram Desktop) > settings > advanced > experimntal > enable webview inspecting
     Ctrl + Shift + i to open inspect webview
 5. Open Application > Session Storage > copy all tgWebAppData ex: query=xxxxx
-6. copy key from cmd and join group discussion [GroupChat](https://t.me/+gU8ad-nLYNI3NjY1)
+6. open bot copy key from bot and join group discussion [GroupChat](https://t.me/+gU8ad-nLYNI3NjY1)
 7. create serial.txt and tag @SnailHelperBot and paste the key, wait until bot reply the key for running the bots
 8. copy and paste key to serial.txt
 
